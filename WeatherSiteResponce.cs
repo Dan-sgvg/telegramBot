@@ -40,16 +40,11 @@ namespace teleBot
             public string description { get; set; }
             public string icon { get; set; }
         }
-
-
         public class JsonCity
         {
             public string id { get; set; }
             public string name { get; set; }
             public string country { get; set; }
         }
-
-        
-
     }
 }
