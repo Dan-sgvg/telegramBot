@@ -8,7 +8,7 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using Newtonsoft.Json;
 using static teleBot.WeatherSiteResponce;
-
+using System.Drawing;
 
 namespace teleBot
 {
@@ -55,11 +55,11 @@ namespace teleBot
                     
             }
         }
-        public static async Task GetWeatherFromSite(string cityName)
+        private static async Task GetWeatherFromSite(string cityName)
         {
             try
             {
-                var url = $"{tokens.weatherSite}?q={cityName}&unit=metric&appid={tokens.weatherSiteAppID}&lang=ru";
+                var url = $"{tokens.weatherSite_weather}?q={cityName}&unit=metric&appid={tokens.weatherSiteAppID}&lang=ru";
                 var httpWebResponse = WebRequest.Create(url).GetResponse();
                 using var reader = new StreamReader(httpWebResponse.GetResponseStream());
                 _jsonResp = reader.ReadToEnd();
@@ -73,8 +73,7 @@ namespace teleBot
                 return;
             }
         }
-
-        public static async Task<bool> isOnTheCityList(string city)
+        private static async Task<bool> isOnTheCityList(string city)
         {
             using var reader = new StreamReader(tokens.citiesList_path);
             using var jsonReader = new JsonTextReader(reader);
@@ -85,7 +84,7 @@ namespace teleBot
                 return true;
             return false;
         }
-        public static async Task AddCityToList()
+        private static async Task AddCityToList()
         {
             using var reader = new StreamReader(tokens.citiesList_path);
             using var jsonReader = new JsonTextReader(reader);
@@ -103,38 +102,41 @@ namespace teleBot
             writer.Close();
             _jsonResp = null;
         }
-        public static async Task responceToUser(long chatID)
+        private static async Task responceToUser(long chatID)
         {
-            string wind_degree = "err";
-            switch (_weatherResp.wind.deg)
-            {
-                case int n when (67 < n && n <= 112):
-                    wind_degree = "восточноый"; break;
-                case int n when (112 < n && n <= 157):
-                    wind_degree = "юго-восточный";  break;
-                case int n when (157 < n && n <= 202):
-                    wind_degree = "южный"; break;
-                case int n when (202 < n && n <= 247):
-                    wind_degree = "юго-западный"; break;
-                case int n when (247 < n && n <= 292):
-                    wind_degree = "западный"; break;
-                case int n when (292 < n && n <= 337):
-                    wind_degree = "северо-западный"; break;
-                case int n when (337 < n && n <=360 || 0 <= n && n <= 22):
-                    wind_degree = "северный"; break;
-                case int n when (22 < n && n <= 67):
-                    wind_degree = "северо-восточный"; break;
-
-            }  
+            var wind_degree = getWindDegree();
             var answer = $"Погода в городе {_weatherResp.name}\n" +
                 $"Средняя температура {Math.Round(_weatherResp.main.temp - 273)}°C \n " +
                 $"Максимальная {Math.Round(_weatherResp.main.temp_max) - 273}°C, минимальная {Math.Round(_weatherResp.main.temp_min) - 273}°C\n" +
-                $"{_weatherResp.weather[0].icon} {_weatherResp.weather[0].description}\n" +
+                $"{_weatherResp.weather[0].description}\n" +
                 $"Ощущается как {Math.Round(_weatherResp.main.feels_like) - 273}°C\n" +
                 $"Давление {_weatherResp.main.pressure}, влажность {_weatherResp.main.humidity}%\n" +
                 $"Ветер {wind_degree}, скорость ветра {_weatherResp.wind.speed} м/c";
             Console.WriteLine(answer);
-            await _bot.SendTextMessageAsync(chatID, answer);
+            await _bot.SendTextMessageAsync(chatID, answer); 
+        }
+        private static string getWindDegree()
+        {
+            switch (_weatherResp.wind.deg)
+            {
+                case int n when (67 < n && n <= 112):
+                    return "восточноый"; break;
+                case int n when (112 < n && n <= 157):
+                    return "юго-восточный"; break;
+                case int n when (157 < n && n <= 202):
+                    return "южный"; break;
+                case int n when (202 < n && n <= 247):
+                    return "юго-западный"; break;
+                case int n when (247 < n && n <= 292):
+                    return "западный"; break;
+                case int n when (292 < n && n <= 337):
+                    return "северо-западный"; break;
+                case int n when (337 < n && n <= 360 || 0 <= n && n <= 22):
+                    return "северный"; break;
+                case int n when (22 < n && n <= 67):
+                    return "северо-восточный"; break;
+            }
+            return "err";
         }
     }
 
