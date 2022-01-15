@@ -8,9 +8,9 @@ using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using static teleBot.WeatherStructures;
-using Microsoft.Extensions.Caching.Memory;
-using System.Runtime.Caching;
 
 namespace teleBot
 {
@@ -18,13 +18,23 @@ namespace teleBot
     {
         private static readonly TelegramBotClient _bot;
         private static Weather Weather;
+        private static ILogger logger;
         static Bot()
         {
             Weather = new Weather();
+            using var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder
+                    .AddFilter("Microsoft", LogLevel.Warning)
+                    .AddFilter("System", LogLevel.Warning)
+                    .AddFilter("LoggingConsoleApp.Program", LogLevel.Debug)
+                    .AddConsole();
+            });
+            logger = loggerFactory.CreateLogger<Program>();
             _bot = new TelegramBotClient(tokens.botToken) { Timeout = TimeSpan.FromSeconds(30) };
+            logger.LogInformation($"Привет, я {_bot.GetMeAsync().Result.FirstName} и я помогу тебе узнать погоду.");
             _bot.OnMessage += Bot_OnMessage;
             _bot.StartReceiving();
-            Console.WriteLine($"Привет, я {_bot.GetMeAsync().Result.FirstName} и я помогу тебе узнать погоду.");
         }
         private static async void Bot_OnMessage(object sender, MessageEventArgs e)
         {
@@ -33,7 +43,7 @@ namespace teleBot
                 var message = e.Message;
                 if (message.Type == MessageType.Text)
                 {
-                    Console.WriteLine(message.Text);
+                    logger.LogInformation(message.Text);
                     if (await IsOnTheCityList(message.Text))
                     {
                         await Weather.GetWeatherFromSite(message.Text);
@@ -55,7 +65,7 @@ namespace teleBot
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                logger.LogError(ex," ошибка бота");
             }
         }
         private static async Task<bool> IsOnTheCityList(string city)
@@ -77,7 +87,7 @@ namespace teleBot
 
             var City = JsonConvert.DeserializeObject<JsonCity>(Weather._jsonResp);
             cities.Add(City);
-            Console.WriteLine($"{ City.name} был добавлен в список городов.");
+            logger.LogInformation($"{ City.name} был добавлен в список городов.");
 
             using var writer = new StreamWriter(tokens.citiesList_path);
             using var jsonWriter = new JsonTextWriter(writer);
@@ -96,7 +106,7 @@ namespace teleBot
                 $"Средняя температура {Math.Round(WeatherResp.main.temp - 273)}°C \n " +
                 $"Максимальная {Math.Round(WeatherResp.main.temp_max) - 273}°C, минимальная {Math.Round(WeatherResp.main.temp_min) - 273}°C\n" +
                 $"Давление {WeatherResp.main.pressure}мм, влажность {WeatherResp.main.humidity}%\n";
-            Console.WriteLine(answer);
+            logger.LogInformation(answer);
             await _bot.SendTextMessageAsync(chatID, answer);
         }
         private static string GetWindDegree()
@@ -125,7 +135,7 @@ namespace teleBot
         public void Dispose()
         {
             _bot.StopReceiving();
-            Console.WriteLine("Бот перестал работать.");
+            logger.LogInformation("Бот перестал работать.");
         }
     }
 }

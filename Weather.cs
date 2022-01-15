@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using static teleBot.WeatherStructures;
 
+
 namespace teleBot
 {
     internal class Weather
@@ -30,5 +31,6 @@ namespace teleBot
                 Console.WriteLine(e);
             }
         }
+        
     }
 }
