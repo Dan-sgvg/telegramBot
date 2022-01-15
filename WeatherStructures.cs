@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace teleBot
+﻿namespace teleBot
 {
-    internal class WeatherSiteResponce
+    internal class WeatherStructures
     {
-        public class WeatherResponse
+        public class WeatherResponseJsonClass
         {
             public Weather[] weather { get; set; } // id, параметры погоды, описание, иконка
             public Main main { get; set; } // темп, ощущается, max, min, давление, влажность
@@ -44,7 +40,6 @@ namespace teleBot
         {
             public string id { get; set; }
             public string name { get; set; }
-            public string country { get; set; }
         }
     }
 }
