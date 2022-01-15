@@ -9,6 +9,8 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using Newtonsoft.Json;
 using static teleBot.WeatherStructures;
+using Microsoft.Extensions.Caching.Memory;
+using System.Runtime.Caching;
 
 namespace teleBot
 {
@@ -53,7 +55,7 @@ namespace teleBot
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex);
             }
         }
         private static async Task<bool> IsOnTheCityList(string city)
@@ -65,7 +67,6 @@ namespace teleBot
 
             return cities.Exists(item => item.name == city);
         }
-
         private static async Task AddCityToList()
         {
             using var reader = new StreamReader(tokens.citiesList_path);
