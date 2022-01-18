@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
@@ -17,6 +19,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\citiesSorter\citiesSorter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>appsettings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

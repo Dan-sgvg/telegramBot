@@ -14,11 +14,17 @@ namespace teleBot
     {
         public static WeatherResponseJsonClass WeatherResp;
         public static string _jsonResp;
+        private static tokens Tokens;
+        public Weather(tokens tokens)
+        {
+            Tokens = tokens;
+        }
+
         public static async Task GetWeatherFromSite(string cityName)
         {
             try
             {
-                var url = $"{tokens.weatherSite_weather}?q={cityName}&unit=metric&appid={tokens.weatherSiteAppID}&lang=ru";
+                var url = $"{Tokens.WeatherSiteUrl}?q={cityName}&unit=metric&appid={Tokens.WeatherSiteAppID}&lang=ru";
                 var httpWebResponse = WebRequest.Create(url).GetResponse();
                 using var reader = new StreamReader(httpWebResponse.GetResponseStream());
                 _jsonResp = reader.ReadToEnd();

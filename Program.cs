@@ -8,9 +8,9 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using Newtonsoft.Json;
 
-
 namespace teleBot
 {
+
     internal class Program
     {
         private static Bot _bot;

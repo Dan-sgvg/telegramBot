@@ -10,6 +10,7 @@ using Telegram.Bot.Types.Enums;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Configuration;
 using static teleBot.WeatherStructures;
 
 namespace teleBot
@@ -19,9 +20,9 @@ namespace teleBot
         private static readonly TelegramBotClient _bot;
         private static Weather Weather;
         private static ILogger logger;
+        private static readonly tokens Tokens;
         static Bot()
         {
-            Weather = new Weather();
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder
@@ -30,8 +31,17 @@ namespace teleBot
                     .AddFilter("LoggingConsoleApp.Program", LogLevel.Debug)
                     .AddConsole();
             });
+
+            var builder = new ConfigurationBuilder()
+                 .SetBasePath(Directory.GetCurrentDirectory())
+                 .AddJsonFile("appsettings.json", optional: false);
+            var config = builder.Build();
+
+            Tokens = config.GetSection("Settings").Get<tokens>();
             logger = loggerFactory.CreateLogger<Program>();
-            _bot = new TelegramBotClient(tokens.botToken) { Timeout = TimeSpan.FromSeconds(30) };
+            Weather = new Weather(Tokens);
+
+            _bot = new TelegramBotClient(Tokens.BotToken) { Timeout = TimeSpan.FromSeconds(30) };
             logger.LogInformation($"Привет, я {_bot.GetMeAsync().Result.FirstName} и я помогу тебе узнать погоду.");
             _bot.OnMessage += Bot_OnMessage;
             _bot.StartReceiving();
@@ -70,7 +80,7 @@ namespace teleBot
         }
         private static async Task<bool> IsOnTheCityList(string city)
         {
-            using var reader = new StreamReader(tokens.citiesList_path);
+            using var reader = new StreamReader(Tokens.CitiesListPath);
             using var jsonReader = new JsonTextReader(reader);
             var serializer = new JsonSerializer();
             var cities = serializer.Deserialize<List<JsonCity>>(jsonReader);
@@ -79,7 +89,7 @@ namespace teleBot
         }
         private static async Task AddCityToList()
         {
-            using var reader = new StreamReader(tokens.citiesList_path);
+            using var reader = new StreamReader(Tokens.CitiesListPath);
             using var jsonReader = new JsonTextReader(reader);
             var serializer = new JsonSerializer();
             var cities = serializer.Deserialize<List<JsonCity>>(jsonReader);
@@ -89,7 +99,7 @@ namespace teleBot
             cities.Add(City);
             logger.LogInformation($"{ City.name} был добавлен в список городов.");
 
-            using var writer = new StreamWriter(tokens.citiesList_path);
+            using var writer = new StreamWriter(Tokens.CitiesListPath);
             using var jsonWriter = new JsonTextWriter(writer);
             serializer.Serialize(jsonWriter, cities);
             writer.Close();
