@@ -53,6 +53,12 @@ namespace teleBot
                 var message = e.Message;
                 if (message.Type == MessageType.Text)
                 {
+                    if (message.Text == "/start")
+                    {
+                        await _bot.SendTextMessageAsync(message.Chat.Id, "Напиши мне город и я найду погоду.");
+                        return;
+                    }
+                        
                     logger.LogInformation(message.Text);
                     if (await IsOnTheCityList(message.Text))
                     {
