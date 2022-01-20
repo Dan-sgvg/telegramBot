@@ -17,11 +17,11 @@ namespace teleBot
 {
     internal class Bot : IDisposable
     {
-        private static readonly TelegramBotClient _bot;
-        private static Weather Weather;
-        private static ILogger logger;
-        private static readonly tokens Tokens;
-        static Bot()
+        private readonly TelegramBotClient _bot;
+        private Weather Weather;
+        private ILogger logger;
+        private readonly tokens Tokens;
+        public Bot()
         {
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
@@ -46,7 +46,7 @@ namespace teleBot
             _bot.OnMessage += Bot_OnMessage;
             _bot.StartReceiving();
         }
-        private static async void Bot_OnMessage(object sender, MessageEventArgs e)
+        private async void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace teleBot
                 logger.LogError(ex," ошибка бота");
             }
         }
-        private static async Task<bool> IsOnTheCityList(string city)
+        private async Task<bool> IsOnTheCityList(string city)
         {
             using var reader = new StreamReader(Tokens.CitiesListPath);
             using var jsonReader = new JsonTextReader(reader);
@@ -93,7 +93,7 @@ namespace teleBot
 
             return cities.Exists(item => item.name == city);
         }
-        private static async Task AddCityToList()
+        private async Task AddCityToList()
         {
             using var reader = new StreamReader(Tokens.CitiesListPath);
             using var jsonReader = new JsonTextReader(reader);
@@ -101,7 +101,7 @@ namespace teleBot
             var cities = serializer.Deserialize<List<JsonCity>>(jsonReader);
             reader.Close();
 
-            var City = JsonConvert.DeserializeObject<JsonCity>(Weather._jsonResp);
+            var City = JsonConvert.DeserializeObject<JsonCity>(Weather.JsonResp);
             cities.Add(City);
             logger.LogInformation($"{ City.name} был добавлен в список городов.");
 
@@ -109,9 +109,9 @@ namespace teleBot
             using var jsonWriter = new JsonTextWriter(writer);
             serializer.Serialize(jsonWriter, cities);
             writer.Close();
-            Weather._jsonResp = null;
+            Weather.JsonResp = null;
         }
-        private static async Task ResponceToUser(long chatID)
+        private async Task ResponceToUser(long chatID)
         {
             var wind_degree = GetWindDegree();
             var WeatherResp = Weather.WeatherResp;
@@ -125,7 +125,7 @@ namespace teleBot
             logger.LogInformation(answer);
             await _bot.SendTextMessageAsync(chatID, answer);
         }
-        private static string GetWindDegree()
+        private string GetWindDegree()
         {
             switch (Weather.WeatherResp.wind.deg)
             {

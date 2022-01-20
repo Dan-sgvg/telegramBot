@@ -13,9 +13,10 @@ namespace teleBot
 
     internal class Program
     {
-        private static Bot _bot;
+
         static void Main(string[] args)
         {
+            Bot _bot = null;
             try
             {
                 _bot = new Bot();
