@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using static teleBot.WeatherStructures;
-
+using Microsoft.Extensions.Logging;
 
 namespace teleBot
 {
@@ -14,27 +16,25 @@ namespace teleBot
     {
         public WeatherResponseJsonClass WeatherResp;
         public string JsonResp;
-        private tokens Tokens;
-        public Weather(tokens tokens)
-        {
-            Tokens = tokens;
-        }
+        public tokens Tokens;
+        public ILogger logger;
+        private readonly HttpClient client = new HttpClient();
 
         public async Task GetWeatherFromSite(string cityName)
         {
             try
             {
                 var url = $"{Tokens.WeatherSiteUrl}?q={cityName}&unit=metric&appid={Tokens.WeatherSiteAppID}&lang=ru";
-                var httpWebResponse = WebRequest.Create(url).GetResponse();
-                using var reader = new StreamReader(httpWebResponse.GetResponseStream());
-                JsonResp = reader.ReadToEnd();
+                var response = await client.GetAsync(url);
+                //client.GetFromJsonAsync<WeatherResponseJsonClass>(url);
+                response.EnsureSuccessStatusCode();
+                JsonResp = await response.Content.ReadAsStringAsync();
                 WeatherResp = JsonConvert.DeserializeObject<WeatherResponseJsonClass>(JsonResp);
                 WeatherResp.message = null;
             }
-            catch (WebException e)
+            catch (HttpRequestException e)
             {
-                WeatherResp.message = "err";
-                Console.WriteLine(e);
+                logger.LogError(e, "err");
             }
         }
         

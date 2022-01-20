@@ -39,7 +39,7 @@ namespace teleBot
 
             Tokens = config.GetSection("Settings").Get<tokens>();
             logger = loggerFactory.CreateLogger<Program>();
-            Weather = new Weather(Tokens);
+            Weather = new Weather() { logger = logger , Tokens = Tokens };
 
             _bot = new TelegramBotClient(Tokens.BotToken) { Timeout = TimeSpan.FromSeconds(30) };
             logger.LogInformation($"Привет, я {_bot.GetMeAsync().Result.FirstName} и я помогу тебе узнать погоду.");
