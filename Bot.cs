@@ -9,7 +9,6 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Configuration;
 using static teleBot.WeatherStructures;
 
@@ -18,8 +17,8 @@ namespace teleBot
     internal class Bot : IDisposable
     {
         private readonly TelegramBotClient _bot;
-        private Weather Weather;
-        private ILogger logger;
+        private readonly Weather Weather;
+        private readonly ILogger logger;
         private readonly tokens Tokens;
         public Bot()
         {
@@ -39,7 +38,7 @@ namespace teleBot
 
             Tokens = config.GetSection("Settings").Get<tokens>();
             logger = loggerFactory.CreateLogger<Program>();
-            Weather = new Weather() { logger = logger , Tokens = Tokens };
+            Weather = new Weather(Tokens, logger);
 
             _bot = new TelegramBotClient(Tokens.BotToken) { Timeout = TimeSpan.FromSeconds(30) };
             logger.LogInformation($"Привет, я {_bot.GetMeAsync().Result.FirstName} и я помогу тебе узнать погоду.");
@@ -109,7 +108,7 @@ namespace teleBot
             using var jsonWriter = new JsonTextWriter(writer);
             serializer.Serialize(jsonWriter, cities);
             writer.Close();
-            Weather.JsonResp = null;
+            await Weather.SetNull();
         }
         private async Task ResponceToUser(long chatID)
         {

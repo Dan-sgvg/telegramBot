@@ -14,12 +14,17 @@ namespace teleBot
 {
     internal class Weather
     {
-        public WeatherResponseJsonClass WeatherResp;
-        public string JsonResp;
-        public tokens Tokens;
-        public ILogger logger;
+        public WeatherResponseJsonClass WeatherResp { get; private set; }
+        public string JsonResp { get; private set; }
+        public tokens Tokens { get; private set; }
+        public ILogger logger { get; private set; }
         private readonly HttpClient client = new HttpClient();
 
+        public Weather(tokens Tokens, ILogger Logger)
+        {
+            this.Tokens = Tokens;
+            this.logger = Logger;
+        }
         public async Task GetWeatherFromSite(string cityName)
         {
             try
@@ -37,6 +42,9 @@ namespace teleBot
                 logger.LogError(e, "err");
             }
         }
-        
+        public async Task SetNull()
+        {
+            JsonResp = null;
+        }
     }
 }
